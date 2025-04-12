@@ -20,7 +20,8 @@ export default function HomeScreen() {
       </ThemedView>
       <ThemedView style={styles.titleContainer}>
               <ThemedText>
-This is the starting point of my mobile development journey.              </ThemedText>
+This is the starting point of my mobile development journey.
+              </ThemedText>
       </ThemedView>
     </ParallaxScrollView>
   );
