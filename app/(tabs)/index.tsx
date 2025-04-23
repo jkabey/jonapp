@@ -1,47 +1,42 @@
-import { Image, StyleSheet, Platform } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import React from 'react';
+import { Image, StyleSheet, ScrollView, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { LeagueList } from '@/components/LeagueList';
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Image
+        source={require('@/assets/images/football_soccer.jpg')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome to jonapp</ThemedText>
+        <ThemedText>
+          Connecting Fans, Celebrating the Beautiful Game
+        </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.titleContainer}>
-              <ThemedText>
-This is the starting point of my mobile development journey.
-              </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+      <LeagueList />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backgroundImage: {
+    width: '100%',
+    height: 250,
+  },
   titleContainer: {
-    flexDirection: 'row',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 });
