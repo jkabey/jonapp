@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext } from 'react';
 import { LeagueInfo, allLeagues } from '@/constants/LeaguesData';
 
@@ -8,7 +9,7 @@ interface LeagueContextProps {
 
 const LeagueContext = createContext<LeagueContextProps | undefined>(undefined);
 
-export const LeagueProvider: React.FC = ({ children }) => {
+export const LeagueProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   const [leagues, setLeagues] = useState<LeagueInfo[]>(allLeagues);
 
   return (

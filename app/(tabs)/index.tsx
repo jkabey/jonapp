@@ -1,15 +1,24 @@
 
-
 import React from 'react';
 import { Image, StyleSheet, ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { LeagueList } from '@/components/LeagueList';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, StackScreenProps } from '@react-navigation/stack';
 
-const Stack = createStackNavigator();
+// Define the navigation stack types
+type RootStackParamList = {
+  Home: undefined; // No parameters for Home screen
+  Detail: { league: { league: string; country: string; leadingTeam: string; seeMoreLink: string } }; // Parameters for Detail screen
+};
 
-function HomeScreen({ navigation }) {
+// Define the props for each screen
+type HomeScreenProps = StackScreenProps<RootStackParamList, 'Home'>;
+type DetailScreenProps = StackScreenProps<RootStackParamList, 'Detail'>;
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+function HomeScreen({ navigation }: HomeScreenProps) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image
@@ -34,7 +43,7 @@ function HomeScreen({ navigation }) {
   );
 }
 
-function DetailScreen({ route }) {
+function DetailScreen({ route }: DetailScreenProps) {
   const { league } = route.params;
 
   const openLink = () => {
@@ -88,6 +97,7 @@ const styles = StyleSheet.create({
   detailContainer: {
     flex: 1,
     padding: 20,
+    
   },
   title: {
     fontSize: 18,
