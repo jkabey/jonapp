@@ -1,108 +1,29 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  FlatList,
+  Pressable,
+} from 'react-native';
+import { useLeagueContext } from '../app/context/LeagueContext';
 
-// import React, { useState } from 'react';
-// import { View, Text, TextInput, StyleSheet, FlatList, Platform, Pressable } from 'react-native';
-// import { allLeagues, LeagueInfo } from '@/constants/LeaguesData';
+export const LeagueList = ({ onLeaguePress }: { onLeaguePress: (league: any) => void }) => {
+  const { leagues } = useLeagueContext();
 
-// export const LeagueList: React.FC = () => {
-//   const [searchText, setSearchText] = useState('');
-//   const [filtered, setFiltered] = useState<LeagueInfo[]>(allLeagues);
-
-//   const handleSearch = (text: string) => {
-//     setSearchText(text);
-//     const filteredResults = allLeagues.filter(item =>
-//       item.league.toLowerCase().includes(text.toLowerCase()) ||
-//       item.country.toLowerCase().includes(text.toLowerCase()) ||
-//       item.leadingTeam.toLowerCase().includes(text.toLowerCase())
-//     );
-//     setFiltered(filteredResults);
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <TextInput
-//         style={styles.searchBar}
-//         placeholder="Search leagues, countries, or teams..."
-//         value={searchText}
-//         onChangeText={handleSearch}
-//       />
-//       <FlatList
-//         data={filtered}
-//         keyExtractor={(item) => item.league}
-//         renderItem={({ item }) => (
-//           <View style={styles.card}>
-//             <Text style={styles.title}>{item.league}</Text>
-//             <Text style={styles.text}>Country: {item.country}</Text>
-//             <Text style={styles.text}>Leading Team: {item.leadingTeam}</Text>
-//             <Pressable onPress={() => Platform.OS === 'web' ? window.open(item.seeMoreLink, '_blank') : null}>
-//               <Text style={styles.link}>See More</Text>
-//             </Pressable>
-//           </View>
-//         )}
-//         ListEmptyComponent={<Text style={styles.noResult}>No results found.</Text>}
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 16,
-//   },
-//   searchBar: {
-//     height: 40,
-//     borderColor: '#ccc',
-//     borderWidth: 1,
-//     borderRadius: 8,
-//     marginBottom: 12,
-//     paddingHorizontal: 10,
-//   },
-//   card: {
-//     padding: 12,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#eee',
-//   },
-//   title: {
-//     fontWeight: 'bold',
-//     fontSize: 16,
-//   },
-//   text: {
-//     fontSize: 14,
-//     marginTop: 2,
-//   },
-//   link: {
-//     color: 'blue',
-//     marginTop: 6,
-//   },
-//   noResult: {
-//     textAlign: 'center',
-//     color: 'gray',
-//     marginTop: 20,
-//   },
-// });
-
-
-
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, FlatList, Pressable } from 'react-native';
-import { allLeagues, LeagueInfo } from '@/constants/LeaguesData';
-
-interface LeagueListProps {
-  onLeaguePress: (league: LeagueInfo) => void;
-}
-
-export const LeagueList: React.FC<LeagueListProps> = ({ onLeaguePress }) => {
   const [searchText, setSearchText] = useState('');
-  const [filtered, setFiltered] = useState<LeagueInfo[]>(allLeagues);
+  const [filtered, setFiltered] = useState(leagues);
 
-  const handleSearch = (text: string) => {
-    setSearchText(text);
-    const filteredResults = allLeagues.filter(item =>
-      item.league.toLowerCase().includes(text.toLowerCase()) ||
-      item.country.toLowerCase().includes(text.toLowerCase()) ||
-      item.leadingTeam.toLowerCase().includes(text.toLowerCase())
+  useEffect(() => {
+    // Running filter when leagues or searchText changes
+    const filteredResults = leagues.filter((item) =>
+      item.league.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.country.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.leadingTeam.toLowerCase().includes(searchText.toLowerCase())
     );
     setFiltered(filteredResults);
-  };
+  }, [searchText, leagues]);
 
   return (
     <View style={styles.container}>
@@ -110,8 +31,10 @@ export const LeagueList: React.FC<LeagueListProps> = ({ onLeaguePress }) => {
         style={styles.searchBar}
         placeholder="Search leagues, countries, or teams..."
         value={searchText}
-        onChangeText={handleSearch}
+        onChangeText={setSearchText}
+        placeholderTextColor="#888"
       />
+
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.league}
@@ -124,7 +47,9 @@ export const LeagueList: React.FC<LeagueListProps> = ({ onLeaguePress }) => {
             </View>
           </Pressable>
         )}
-        ListEmptyComponent={<Text style={styles.noResult}>No results found.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.noResult}>No results found.</Text>
+        }
       />
     </View>
   );
@@ -133,27 +58,37 @@ export const LeagueList: React.FC<LeagueListProps> = ({ onLeaguePress }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    backgroundColor: '#f2f2f2',
+
+    flex: 1,
   },
   searchBar: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: '#444',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     paddingHorizontal: 10,
+    color: '#000',
+    backgroundColor: '#fff',
   },
   card: {
+    backgroundColor: '#fff',
     padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderRadius: 10,
+    marginBottom: 12,
+    borderColor: '#333',
+    borderWidth: 1,
   },
   title: {
     fontWeight: 'bold',
     fontSize: 16,
+    color: '#000',
   },
   text: {
     fontSize: 14,
     marginTop: 2,
+    color: '#000',
   },
   noResult: {
     textAlign: 'center',
