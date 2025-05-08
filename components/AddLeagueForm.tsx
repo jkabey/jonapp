@@ -21,7 +21,13 @@ const AddLeagueForm = () => {
   const [country, setCountry] = useState('');
   const [leadingTeam, setLeadingTeam] = useState('');
   const [seeMoreLink, setSeeMoreLink] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{
+    league?: string;
+    country?: string;
+    leadingTeam?: string;
+    seeMoreLink?: string;
+  }>({});
+  
 
   const validate = () => {
     const newErrors: any = {};
