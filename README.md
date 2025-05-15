@@ -1,50 +1,46 @@
-# Welcome to your Expo app 👋
+1.Supabase configuration and table setup
+Go to https://supabase.com and create a project.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+*Create a table named leagues with the following fields:
+league
+text
+country
+leadingTeam
+seeMoreLink
 
-## Get started
+*Enable Row Level Security (RLS) and add the insert policy.
+2.How React-Query is used
+React Query is used to cache and manage league data.
+-Wrapped in <QueryClientProvider> in _layout.tsx:
+<QueryClientProvider client={queryClient}> 
+  {/* App content */} 
+</QueryClientProvider>
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+-On adding a new league (AddLeagueForm.tsx):
+queryClient.invalidateQueries(['leagues']);
+This refreshes the league list after a new item is added.
 
-2. Start the app
+-Cached data is preloaded on app start (preloadLeagues.ts):
+queryClient.setQueryData(['leagues'], JSON.parse(cached));
 
-   ```bash
-    npx expo start
-   ```
+How AsyncStorage is implemented
+AsyncStorage is used to store Supabase sessions automatically and cache league data locally for faster loading.
 
-In the output, you'll find options to open the app in a
+ 
+A. file utils/supabase.ts
+When the Supabase client is initialized, AsyncStorage is passed to the auth.storage option:const storage = isReactNative ? AsyncStorage : undefined;
+// ...
+auth: {
+storage, // Use AsyncStorage for React Native
+// ...
+}, 
+B.File: app/hooks/useGetLeague.ts
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Implementation for Caching:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Saving to Cache: Inside the queryFn of the useGetLeagues hook, after successfully fetching league data from Supabase, the data is stringified and saved to AsyncStorage:await AsyncStorage.setItem(LEAGUE_CACHE_KEY, JSON.stringify(data)); 
 
-## Get a fresh project
+C.File: app/utils/preloadLeague.ts
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Implementation: This file contains a preloadLeagues function that can be used to proactively load data from AsyncStorage and populate the React Query cache using queryClient.setQueryData(['leagues'], JSON.parse(cached)). 

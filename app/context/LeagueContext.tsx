@@ -1,19 +1,35 @@
-
-import React, { createContext, useState, useContext } from 'react';
-import { LeagueInfo, allLeagues } from '@/constants/LeaguesData';
+import React, { createContext, useState, useContext, useEffect, PropsWithChildren } from 'react';
+import { LeagueInfo } from '@/constants/LeaguesData';
+import { useGetLeagues } from '@/hooks/useGetLeague';
 
 interface LeagueContextProps {
   leagues: LeagueInfo[];
-  setLeagues: React.Dispatch<React.SetStateAction<LeagueInfo[]>>;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null; // To hold the error object if one occurs
 }
 
 const LeagueContext = createContext<LeagueContextProps | undefined>(undefined);
 
-export const LeagueProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
-  const [leagues, setLeagues] = useState<LeagueInfo[]>(allLeagues);
+export const LeagueProvider: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+  // This local state will be synced with React Query's state via useGetLeagues
+  const [leagues, setLeagues] = useState<LeagueInfo[]>([]); // Initialize with empty array
+
+  // Fetch leagues using the React Query hook
+  const { data: fetchedLeagues, isLoading, isError, error } = useGetLeagues();
+
+  useEffect(() => {
+    //  update the context's state.
+    if (fetchedLeagues) {
+      setLeagues(fetchedLeagues);
+    } else if (!isLoading && !isError) {
+      // Handle case where fetchedLeagues might be undefined but not loading
+      setLeagues([]);
+    }
+  }, [fetchedLeagues, isLoading, isError]);
 
   return (
-    <LeagueContext.Provider value={{ leagues, setLeagues }}>
+    <LeagueContext.Provider value={{ leagues, isLoading, isError, error }}>
       {children}
     </LeagueContext.Provider>
   );

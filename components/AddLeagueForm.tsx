@@ -12,67 +12,71 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLeagueContext } from '../app/context/LeagueContext';
+import { addLeague } from '../app/utils/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AddLeagueForm = () => {
   const navigation = useNavigation();
-  const { leagues, setLeagues } = useLeagueContext();
+  // const { leagues, setLeagues } = useLeagueContext();
+  const { leagues } = useLeagueContext();
+
+  console.log('Home screen leagues:', leagues);
+  const queryClient = useQueryClient();
 
   const [league, setLeague] = useState('');
   const [country, setCountry] = useState('');
   const [leadingTeam, setLeadingTeam] = useState('');
   const [seeMoreLink, setSeeMoreLink] = useState('');
-  const [errors, setErrors] = useState<{
-    league?: string;
-    country?: string;
-    leadingTeam?: string;
-    seeMoreLink?: string;
-  }>({});
-  
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validate = () => {
-    const newErrors: any = {};
-
-    if (!league.trim()) newErrors.league = 'League name is required.';
-    else if (league.length < 3) newErrors.league = 'League name must be at least 3 characters.';
-
-    if (!country.trim()) newErrors.country = 'Country is required.';
-
-    if (!leadingTeam.trim()) newErrors.leadingTeam = 'Leading team is required.';
-
-    if (!seeMoreLink.trim()) {
-      newErrors.seeMoreLink = 'See More link is required.';
-    } else if (!/^https?:\/\/\S+\.\S+$/.test(seeMoreLink)) {
-      newErrors.seeMoreLink = 'Enter a valid URL (https://...)';
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
+  const validateField = (field: string, rules: { required?: boolean; minLength?: number; regex?: RegExp }) => {
+    if (rules.required && !field.trim()) return 'This field is required.';
+    if (rules.minLength && field.length < rules.minLength) return `Must be at least ${rules.minLength} characters long.`;
+    if (rules.regex && !rules.regex.test(field)) return 'Invalid format.';
+    return null;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+  const validate = () => {
+    const newErrors = {
+      league: validateField(league, { required: true, minLength: 3 }),
+      country: validateField(country, { required: true }),
+      leadingTeam: validateField(leadingTeam, { required: true }),
+      seeMoreLink: validateField(seeMoreLink, { required: true, regex: /^https?:\/\/\S+\.\S+$/ }),
+    };
 
-    // Update global state
-    const newLeague = { league, country, leadingTeam, seeMoreLink };
-    setLeagues([...leagues, newLeague]);
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => !error);
+  };
 
-    Alert.alert('Success', 'League added successfully.');
+  const handleSubmit = async () => {
+    if (isSubmitting || !validate()) return;
 
-    // Clearing form
-    setLeague('');
-    setCountry('');
-    setLeadingTeam('');
-    setSeeMoreLink('');
-    setErrors({});
+    setIsSubmitting(true);
+    try {
+      const newLeague = await addLeague(league, country, leadingTeam, seeMoreLink);
 
-    // Navigating back to Home
-    navigation.goBack();
+      // Invalidate the 'leagues' cache to refetch updated data
+      queryClient.invalidateQueries(['leagues']);
+
+      Alert.alert('Success', 'League added successfully!');
+      setLeague('');
+      setCountry('');
+      setLeadingTeam('');
+      setSeeMoreLink('');
+      setErrors({});
+      navigation.goBack();
+    } catch (error) {
+      console.error('Submission error:', error);
+      Alert.alert('Error', error.message || 'An unexpected error occurred.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.wrapper}
     >
       <ScrollView contentContainerStyle={styles.container}>
@@ -112,8 +116,8 @@ const AddLeagueForm = () => {
         />
         {errors.seeMoreLink && <Text style={styles.errorText}>{errors.seeMoreLink}</Text>}
 
-        <Pressable onPress={handleSubmit} style={styles.button}>
-          <Text style={styles.buttonText}>Submit</Text>
+        <Pressable onPress={handleSubmit} style={styles.button} disabled={isSubmitting}>
+          <Text style={styles.buttonText}>{isSubmitting ? 'Submitting...' : 'Submit'}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -122,10 +126,11 @@ const AddLeagueForm = () => {
 
 export default AddLeagueForm;
 
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#f2f2f2'
+    backgroundColor: '#f2f2f2',
   },
   container: {
     flexGrow: 1,
@@ -172,3 +177,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+

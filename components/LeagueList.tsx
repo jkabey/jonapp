@@ -6,24 +6,50 @@ import {
   StyleSheet,
   FlatList,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { useLeagueContext } from '../app/context/LeagueContext';
+import { LeagueInfo } from '@/constants/LeaguesData';
 
-export const LeagueList = ({ onLeaguePress }: { onLeaguePress: (league: any) => void }) => {
-  const { leagues } = useLeagueContext();
+
+
+export const LeagueList = ({ onLeaguePress }: { onLeaguePress: (league: LeagueInfo) => void }) => {
+  const { leagues, isLoading, isError, error } = useLeagueContext(); // Consume new states
 
   const [searchText, setSearchText] = useState('');
-  const [filtered, setFiltered] = useState(leagues);
+  const [filteredLeagues, setFilteredLeagues] = useState<LeagueInfo[]>([]);
 
   useEffect(() => {
-    // Running filter when leagues or searchText changes
-    const filteredResults = leagues.filter((item) =>
-      item.league.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.country.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.leadingTeam.toLowerCase().includes(searchText.toLowerCase())
+    // Ensure leagues is not null or undefined before filtering
+    const itemsToFilter = leagues || [];
+    if (searchText === '') {
+      setFilteredLeagues(itemsToFilter);
+    } else {
+      const filteredResults = itemsToFilter.filter((item) =>
+        item.league.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.country.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.leadingTeam.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredLeagues(filteredResults);
+    }
+  }, [searchText, leagues]); // leagues from context is now reactive to Supabase updates
+
+  if (isLoading) {
+    return (
+      <View style={styles.centeredMessageContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading leagues...</Text>
+      </View>
     );
-    setFiltered(filteredResults);
-  }, [searchText, leagues]);
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.centeredMessageContainer}>
+        <Text style={styles.errorText}>Error loading leagues: {error?.message || 'Unknown error'}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -34,10 +60,11 @@ export const LeagueList = ({ onLeaguePress }: { onLeaguePress: (league: any) => 
         onChangeText={setSearchText}
         placeholderTextColor="#888"
       />
-
       <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.league}
+        data={filteredLeagues}
+        // Use a unique ID from your Supabase table if available (e.g., item.id)
+        // If 'league' name is guaranteed unique, it can be used, but IDs are safer.
+        keyExtractor={(item, index) => item.id?.toString() || item.league || index.toString()}
         renderItem={({ item }) => (
           <Pressable onPress={() => onLeaguePress(item)}>
             <View style={styles.card}>
@@ -48,12 +75,21 @@ export const LeagueList = ({ onLeaguePress }: { onLeaguePress: (league: any) => 
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text style={styles.noResult}>No results found.</Text>
+          <View style={styles.centeredMessageContainer}>
+            <Text style={styles.noResult}>
+              {leagues && leagues.length === 0 && searchText === ''
+                ? 'No leagues available. Try adding one!'
+                : 'No results found.'}
+            </Text>
+          </View>
         }
       />
     </View>
   );
 };
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -96,3 +132,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
+
+
