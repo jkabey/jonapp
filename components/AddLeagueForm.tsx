@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
   Text,
   TextInput,
   Pressable,
@@ -9,31 +8,35 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useLeagueContext } from '../app/context/LeagueContext';
-import { addLeague } from '../app/utils/supabase';
-import { useQueryClient } from '@tanstack/react-query';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useLeagueContext } from "../app/context/LeagueContext";
+import { addLeague } from "../app/utils/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AddLeagueForm = () => {
   const navigation = useNavigation();
   // const { leagues, setLeagues } = useLeagueContext();
   const { leagues } = useLeagueContext();
 
-  console.log('Home screen leagues:', leagues);
+  console.log("Home screen leagues:", leagues);
   const queryClient = useQueryClient();
 
-  const [league, setLeague] = useState('');
-  const [country, setCountry] = useState('');
-  const [leadingTeam, setLeadingTeam] = useState('');
-  const [seeMoreLink, setSeeMoreLink] = useState('');
+  const [league, setLeague] = useState("");
+  const [country, setCountry] = useState("");
+  const [leadingTeam, setLeadingTeam] = useState("");
+  const [seeMoreLink, setSeeMoreLink] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateField = (field: string, rules: { required?: boolean; minLength?: number; regex?: RegExp }) => {
-    if (rules.required && !field.trim()) return 'This field is required.';
-    if (rules.minLength && field.length < rules.minLength) return `Must be at least ${rules.minLength} characters long.`;
-    if (rules.regex && !rules.regex.test(field)) return 'Invalid format.';
+  const validateField = (
+    field: string,
+    rules: { required?: boolean; minLength?: number; regex?: RegExp },
+  ) => {
+    if (rules.required && !field.trim()) return "This field is required.";
+    if (rules.minLength && field.length < rules.minLength)
+      return `Must be at least ${rules.minLength} characters long.`;
+    if (rules.regex && !rules.regex.test(field)) return "Invalid format.";
     return null;
   };
 
@@ -42,7 +45,10 @@ const AddLeagueForm = () => {
       league: validateField(league, { required: true, minLength: 3 }),
       country: validateField(country, { required: true }),
       leadingTeam: validateField(leadingTeam, { required: true }),
-      seeMoreLink: validateField(seeMoreLink, { required: true, regex: /^https?:\/\/\S+\.\S+$/ }),
+      seeMoreLink: validateField(seeMoreLink, {
+        required: true,
+        regex: /^https?:\/\/\S+\.\S+$/,
+      }),
     };
 
     setErrors(newErrors);
@@ -54,21 +60,21 @@ const AddLeagueForm = () => {
 
     setIsSubmitting(true);
     try {
-      const newLeague = await addLeague(league, country, leadingTeam, seeMoreLink);
+      await addLeague(league, country, leadingTeam, seeMoreLink);
 
       // Invalidate the 'leagues' cache to refetch updated data
-      queryClient.invalidateQueries(['leagues']);
+      queryClient.invalidateQueries(["leagues"]);
 
-      Alert.alert('Success', 'League added successfully!');
-      setLeague('');
-      setCountry('');
-      setLeadingTeam('');
-      setSeeMoreLink('');
+      Alert.alert("Success", "League added successfully!");
+      setLeague("");
+      setCountry("");
+      setLeadingTeam("");
+      setSeeMoreLink("");
       setErrors({});
       navigation.goBack();
     } catch (error) {
-      console.error('Submission error:', error);
-      Alert.alert('Error', error.message || 'An unexpected error occurred.');
+      console.error("Submission error:", error);
+      Alert.alert("Error", error.message || "An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -76,7 +82,7 @@ const AddLeagueForm = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.wrapper}
     >
       <ScrollView contentContainerStyle={styles.container}>
@@ -96,7 +102,9 @@ const AddLeagueForm = () => {
           value={country}
           onChangeText={setCountry}
         />
-        {errors.country && <Text style={styles.errorText}>{errors.country}</Text>}
+        {errors.country && (
+          <Text style={styles.errorText}>{errors.country}</Text>
+        )}
 
         <TextInput
           style={styles.input}
@@ -104,7 +112,9 @@ const AddLeagueForm = () => {
           value={leadingTeam}
           onChangeText={setLeadingTeam}
         />
-        {errors.leadingTeam && <Text style={styles.errorText}>{errors.leadingTeam}</Text>}
+        {errors.leadingTeam && (
+          <Text style={styles.errorText}>{errors.leadingTeam}</Text>
+        )}
 
         <TextInput
           style={styles.input}
@@ -114,10 +124,18 @@ const AddLeagueForm = () => {
           keyboardType="url"
           autoCapitalize="none"
         />
-        {errors.seeMoreLink && <Text style={styles.errorText}>{errors.seeMoreLink}</Text>}
+        {errors.seeMoreLink && (
+          <Text style={styles.errorText}>{errors.seeMoreLink}</Text>
+        )}
 
-        <Pressable onPress={handleSubmit} style={styles.button} disabled={isSubmitting}>
-          <Text style={styles.buttonText}>{isSubmitting ? 'Submitting...' : 'Submit'}</Text>
+        <Pressable
+          onPress={handleSubmit}
+          style={styles.button}
+          disabled={isSubmitting}
+        >
+          <Text style={styles.buttonText}>
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -126,56 +144,53 @@ const AddLeagueForm = () => {
 
 export default AddLeagueForm;
 
-
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
   },
   container: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
     fontSize: 26,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: 24,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
     padding: 14,
     borderRadius: 10,
     marginBottom: 8,
     fontSize: 16,
-    color: '#000',
-    borderColor: '#444',
+    color: "#000",
+    borderColor: "#444",
     borderWidth: 1,
   },
   errorText: {
-    color: '#ff6b6b',
+    color: "#ff6b6b",
     marginBottom: 12,
     fontSize: 14,
   },
   button: {
-    backgroundColor: '#f97316',
+    backgroundColor: "#f97316",
     paddingVertical: 14,
     borderRadius: 10,
     marginTop: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
-
-

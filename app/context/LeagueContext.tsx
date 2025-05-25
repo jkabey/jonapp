@@ -1,6 +1,12 @@
-import React, { createContext, useState, useContext, useEffect, PropsWithChildren } from 'react';
-import { LeagueInfo } from '@/constants/LeaguesData';
-import { useGetLeagues } from '@/hooks/useGetLeague';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  PropsWithChildren,
+} from "react";
+import { LeagueInfo } from "@/constants/LeaguesData";
+import { useGetLeagues } from "@/hooks/useGetLeague";
 
 interface LeagueContextProps {
   leagues: LeagueInfo[];
@@ -11,7 +17,7 @@ interface LeagueContextProps {
 
 const LeagueContext = createContext<LeagueContextProps | undefined>(undefined);
 
-export const LeagueProvider: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+export const LeagueProvider: React.FC<PropsWithChildren> = ({ children }) => {
   // This local state will be synced with React Query's state via useGetLeagues
   const [leagues, setLeagues] = useState<LeagueInfo[]>([]); // Initialize with empty array
 
@@ -38,7 +44,7 @@ export const LeagueProvider: React.FC<PropsWithChildren<{}>> = ({ children }) =>
 export const useLeagueContext = (): LeagueContextProps => {
   const context = useContext(LeagueContext);
   if (!context) {
-    throw new Error('useLeagueContext must be used within a LeagueProvider');
+    throw new Error("useLeagueContext must be used within a LeagueProvider");
   }
   return context;
 };

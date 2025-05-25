@@ -1,23 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../app/utils/supabase';
-import { LeagueInfo } from '@/constants/LeaguesData';
+import { useQuery } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../app/utils/supabase";
+import { LeagueInfo } from "@/constants/LeaguesData";
 
-const LEAGUE_CACHE_KEY = 'leagues';
+const LEAGUE_CACHE_KEY = "leagues";
 
 // Helper to check if running in React Native
 const isReactNativeEnvironment = () => {
-  return typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+  return (
+    typeof navigator !== "undefined" && navigator.product === "ReactNative"
+  );
 };
 
 export const useGetLeagues = () => {
-  return useQuery<LeagueInfo[], Error>({ // Explicitly type the query data and error
-    queryKey: ['leagues'],
+  return useQuery<LeagueInfo[], Error>({
+    // Explicitly type the query data and error
+    queryKey: ["leagues"],
     queryFn: async () => {
-      const { data, error } = await supabase.from('leagues').select('*');
+      const { data, error } = await supabase.from("leagues").select("*");
 
       if (error) {
-        console.error('Error fetching leagues from Supabase:', error);
+        console.error("Error fetching leagues from Supabase:", error);
         throw new Error(error.message);
       }
 
@@ -31,7 +34,7 @@ export const useGetLeagues = () => {
             await AsyncStorage.setItem(LEAGUE_CACHE_KEY, JSON.stringify([]));
           }
         } catch (e) {
-          console.warn('Failed to save leagues to AsyncStorage in queryFn:', e);
+          console.warn("Failed to save leagues to AsyncStorage in queryFn:", e);
         }
       }
       return data || []; // Ensure returning an array even if data is null/undefined
@@ -46,7 +49,10 @@ export const useGetLeagues = () => {
           }
           return undefined; // No cached data
         } catch (error) {
-          console.warn('Failed to load leagues from AsyncStorage for initialData:', error);
+          console.warn(
+            "Failed to load leagues from AsyncStorage for initialData:",
+            error,
+          );
           return undefined; // Gracefully fail if AsyncStorage errors
         }
       }
@@ -55,4 +61,3 @@ export const useGetLeagues = () => {
     staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
   });
 };
-
