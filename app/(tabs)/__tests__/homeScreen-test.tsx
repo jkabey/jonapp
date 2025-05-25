@@ -117,7 +117,7 @@ describe("HomeScreen functionality", () => {
     // League should still be visible
     expect(screen.getByText("Premier League")).toBeTruthy();
 
-    // Now search for something not in the list
+    //  searching for something not in the list
     fireEvent.changeText(searchInput, "La Liga");
 
     await waitFor(() => {
